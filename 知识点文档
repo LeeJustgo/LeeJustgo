@@ -1,1 +1,58 @@
+1. 在函数后面加一个const，表示在该成员函数中，任意修改它所在的类的成员的操作都是不允许的（因为隐含了对this指针的const引用），唯一的例外就是对于mutable修饰的成员
+    class A {
+    private: int m_a;
+             mutable int m_b;
+    public:
+        A() : m_a(0,0) {}
+         int getA() conm_b;st  {
+             return m_a; //同return this->m_a;。
+         }
+         int GetA() {
+             return m_a;
+         }
+         int setA(int a) const {
+             m_a = a; //这里产生编译错误，如果把前面的成员定义int m_a;改为mutable int m_a;就可以编译通过。
+         }
+         int SetA(int a)  {
+             m_a = a; //同this->m_a = a;
+         }
+         nt setB(int b) const {
+             m_b = b; //this->m_b = b;
+         }
+};
 
+2. Q_D 和 Q_Q
+    类 QtServiceController 定义：
+        class QtServiceController 
+        {
+           Q_DECLARE_PRIVATE(QtServiceController) 
+         public:
+         QtServiceController(const QString &name);
+         //省略其他 
+        private:
+         QtServiceControllerPrivate *d_ptr; 
+        };
+
+    宏定义在 QtGlobal(即qglobal.h)头文件中：
+        #define Q_DECLARE_PRIVATE(Class) \
+        inline Class##Private* d_func() { return reinterpret_cast<Class##Private *>(qGetPtrHelper(d_ptr)); } \
+        inline const Class##Private* d_func() const { return reinterpret_cast<const Class##Private *>(qGetPtrHelper(d_ptr)); } \
+        friend class Class##Private;  
+
+        #define Q_DECLARE_PUBLIC(Class) \
+        inline Class* q_func() { return static_cast<Class *>(q_ptr); } \
+        inline const Class* q_func() const { return static_cast<const Class *>(q_ptr); } \
+        friend class Class;
+
+    反正核心就是：
+        在 QtServiceController 中通过 d_func() 可以获得 QtServiceControllerPrivate 的指针 d_ptr
+        在 QtServiceControllerPrivate 中通过 q_func() 可以获得 QtServiceController 的指针 q_ptr
+
+    Q_D 和 Q_Q
+        #define Q_D(Class) Class##Private * const d = d_func() 
+        #define Q_Q(Class) Class * const q = q_func()  
+        
+3. 
+    
+    
+    
